@@ -1,0 +1,66 @@
+--- a/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_kernels.cuh
++++ b/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_kernels.cuh
+@@ -1553,19 +1553,24 @@
+     // NOTE: we don't use (min_num_tokens_alignment-1) to be able to do power of two divisions
+     int64_t num_padding_tokens = min_num_tokens_alignment * num_experts_per_node;
+ 
+-    for (int64_t padding_token = blockIdx.x; padding_token < num_padding_tokens;
+-         padding_token += gridDim.x) {
+-      int64_t expert = padding_token / min_num_tokens_alignment;
++    // One iteration per expert instead of one per padding slot: the loop below
++    // used to run min_num_tokens_alignment * num_experts times and reload two
++    // expert_first_token_offset entries on each pass, which at decode batch
++    // sizes is 16384 iterations of pointer chasing for a few dozen KB of SF
++    // writes. The set of writes is unchanged.
++    (void)num_padding_tokens;
++    for (int64_t expert = blockIdx.x; expert < num_experts_per_node; expert += gridDim.x) {
+       int64_t num_tokens_before_expert = expert_first_token_offset[expert];
+       int64_t num_tokens_after_expert = expert_first_token_offset[expert + 1];
+       int64_t tokens_to_expert = num_tokens_after_expert - num_tokens_before_expert;
+       int64_t padding_to_expert = TmaWarpSpecializedGroupedGemmInput::alignToSfDim(
+                                       tokens_to_expert, min_num_tokens_alignment) -
+                                   tokens_to_expert;
+-      int64_t expert_pad_idx = padding_token % min_num_tokens_alignment;
+-      if (expert_pad_idx < padding_to_expert) {
+-        for (int64_t elem_index = start_offset; elem_index < padded_num_elems_in_col;
+-             elem_index += stride) {
++      {
++        int64_t const pad_work = padding_to_expert * padded_num_elems_in_col;
++        for (int64_t work_idx = start_offset; work_idx < pad_work; work_idx += stride) {
++          int64_t const expert_pad_idx = work_idx / padded_num_elems_in_col;
++          int64_t const elem_index = work_idx % padded_num_elems_in_col;
+           writeSF<VecSize, VecSize>(num_tokens_before_expert, expert, /*source_row*/ -1,
+                                     num_tokens_after_expert + expert_pad_idx, elem_index,
+                                     padded_hidden_size, fc1_act_sf_flat,
+@@ -2260,19 +2265,24 @@
+     // NOTE: we don't (min_num_tokens_alignment-1) to have power of two divisions
+     int64_t num_padding_tokens = min_num_tokens_alignment * num_experts_per_node;
+ 
+-    for (int64_t padding_token = blockIdx.x; padding_token < num_padding_tokens;
+-         padding_token += gridDim.x) {
+-      int64_t expert = padding_token / min_num_tokens_alignment;
++    // One iteration per expert instead of one per padding slot: the loop below
++    // used to run min_num_tokens_alignment * num_experts times and reload two
++    // expert_first_token_offset entries on each pass, which at decode batch
++    // sizes is 16384 iterations of pointer chasing for a few dozen KB of SF
++    // writes. The set of writes is unchanged.
++    (void)num_padding_tokens;
++    for (int64_t expert = blockIdx.x; expert < num_experts_per_node; expert += gridDim.x) {
+       int64_t num_tokens_before_expert = expert_first_token_offset[expert];
+       int64_t num_tokens_after_expert = expert_first_token_offset[expert + 1];
+       int64_t tokens_to_expert = num_tokens_after_expert - num_tokens_before_expert;
+       int64_t padding_to_expert = TmaWarpSpecializedGroupedGemmInput::alignToSfDim(
+                                       tokens_to_expert, min_num_tokens_alignment) -
+                                   tokens_to_expert;
+-      int64_t expert_pad_idx = padding_token % min_num_tokens_alignment;
+-      if (expert_pad_idx < padding_to_expert) {
+-        for (int64_t elem_index = start_offset; elem_index < padded_num_elems_in_col;
+-             elem_index += stride) {
++      {
++        int64_t const pad_work = padding_to_expert * padded_num_elems_in_col;
++        for (int64_t work_idx = start_offset; work_idx < pad_work; work_idx += stride) {
++          int64_t const expert_pad_idx = work_idx / padded_num_elems_in_col;
++          int64_t const elem_index = work_idx % padded_num_elems_in_col;
+           // The SF buffer is padded to a multiple of MinNDimAlignment for each expert
+           // This means we can safely write to offset num_tokens_after_expert + padded_token, since
+           // the next expert will leave space for the padding

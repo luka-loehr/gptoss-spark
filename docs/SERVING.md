@@ -8,7 +8,7 @@ classroom, and vice versa.
 
 | | `PROFILE=spec` | `PROFILE=plain` |
 | --- | --- | --- |
-| single stream | **65.2 tok/s** | 62.4 tok/s |
+| single stream | **68.8 tok/s** | 65.0 tok/s |
 | concurrent slots | 2 | 32 |
 | 30 users, aggregate | not applicable | **299.5 tok/s** |
 | 30 users, TTFT median | — | 1.2 s |

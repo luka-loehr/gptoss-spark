@@ -54,11 +54,17 @@ RUN git clone --depth 1 "${FLASHINFER_FORK}" /tmp/fi \
     && ln -s /opt/flashinfer-spark/3rdparty/spdlog spdlog \
     && rm -rf /tmp/fi
 
-# ---- engine patches ---------------------------------------------------------
+# ---- patches ----------------------------------------------------------------
+# patches/*.patch apply to the installed vLLM; patches/kernels/*.patch apply to
+# the vendored kernel source and are compiled by the JIT on first start.
 COPY patches /opt/gptoss-spark/patches
 RUN cd /usr/local/lib/python3.12/dist-packages \
     && for p in /opt/gptoss-spark/patches/*.patch; do \
          echo "applying $(basename "$p")"; patch -p1 --forward < "$p"; \
+       done \
+    && cd /opt/flashinfer-spark \
+    && for p in /opt/gptoss-spark/patches/kernels/*.patch; do \
+         echo "applying kernels/$(basename "$p")"; patch -p1 --forward < "$p"; \
        done
 
 COPY containers/entrypoint.sh /usr/local/bin/gptoss-entrypoint

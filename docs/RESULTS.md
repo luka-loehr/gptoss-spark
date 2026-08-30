@@ -10,22 +10,33 @@ one DGX Spark, GB10, 121 GB, `sm_121`. Raw artifacts are in
 
 | # | configuration | decode | note |
 | ---: | --- | ---: | --- |
-| 1 | **vLLM nightly + patches, Eagle3 K=1** | **65.2** | this repo, `PROFILE=spec` |
-| 2 | vLLM nightly + patches, plain | 62.4 | this repo, `PROFILE=plain` |
-| 3 | vLLM nightly + patches, Eagle3 K=2 | 60.7 | deeper speculation loses |
-| 4 | fork image (`vllm-mxfp4-spark`, Jan-2026 vLLM) | 61.0 | where the kernels come from |
-| 5 | SGLang `:spark` 0.5.4 | 52.6 | previous production |
-| 6 | llama.cpp b6fdd0ac, MXFP4 GGUF | 50.4 | `llama-bench tg64` claims 54.6 |
-| 7 | vLLM nightly, `flashinfer_cutlass`, no dense quant | 34.7 | patches 01+02 only |
-| 8 | vLLM nightly, `marlin` | 34.7 | |
-| 9 | vLLM nightly, `humming` | 35.1 | 33.2 even with dense quant |
-| 10 | SGLang `dev-cu13` (0.5.17+) | 34.0 | newer, slower on this chip |
-| 11 | NVIDIA vLLM 26.07 + Eagle3 D1 | 42.2 | earlier lab qualification |
-| 12 | NVIDIA vLLM 26.07, no speculation | 37.3 | |
-| 13 | TensorRT-LLM 1.3.0rc12 + Eagle | 20.2 | |
+| 1 | **+ MoE SF-padding patch + 32k draft vocab, K=1** | **68.8** | this repo, `PROFILE=spec` |
+| 2 | **+ MoE SF-padding patch, plain** | **65.0** | this repo, `PROFILE=plain` |
+| 3 | vLLM nightly + patches, Eagle3 K=1 | 65.2 | before the kernel patch |
+| 4 | vLLM nightly + patches, plain | 62.4 | before the kernel patch |
+| 5 | vLLM nightly + patches, Eagle3 K=2 | 60.7 | deeper speculation loses |
+| 6 | fork image (`vllm-mxfp4-spark`, Jan-2026 vLLM) | 61.0 | where the kernels come from |
+| 7 | SGLang `:spark` 0.5.4 | 52.6 | previous production |
+| 8 | llama.cpp b6fdd0ac, MXFP4 GGUF | 50.4 | `llama-bench tg64` claims 54.6 |
+| 9 | vLLM nightly, `flashinfer_cutlass`, no dense quant | 34.7 | patches 01+02 only |
+| 10 | vLLM nightly, `marlin` | 34.7 | |
+| 11 | vLLM nightly, `humming` | 35.1 | 33.2 even with dense quant |
+| 12 | SGLang `dev-cu13` (0.5.17+) | 34.0 | newer, slower on this chip |
+| 13 | NVIDIA vLLM 26.07 + Eagle3 D1 | 42.2 | earlier lab qualification |
+| 14 | NVIDIA vLLM 26.07, no speculation | 37.3 | |
+| 15 | TensorRT-LLM 1.3.0rc12 + Eagle | 20.2 | |
 
-Rows 11–13 are from the qualification round that preceded this work; they used
+Rows 13–15 are from the qualification round that preceded this work; they used
 the same benchmark and the same weights.
+
+Row 1 is the median of three runs (69.0 / 68.1 / 68.8); rows 1 and 2 differ
+from 3 and 4 only by
+[`patches/kernels/01`](../patches/kernels/01-moe-sf-padding-loop.patch), which
+is bit-identical in output, plus — for row 1 — a draft head whose lm_head was
+cut to 32768 rows by [`ops/shrink-draft-vocab.py`](../ops/shrink-draft-vocab.py).
+Neither can change what the model answers: the padding patch writes exactly the
+same scale factors, and the shrunken draft vocabulary only narrows what the
+drafter may *propose*, while the target still verifies over the full 201088.
 
 ## 2. Time to first token
 
@@ -90,17 +101,40 @@ top-5 logprobs captured from both stacks
 ## 6. Kernel-level accounting
 
 See [KERNELS.md](KERNELS.md). Summary: at the record configuration the GPU
-executes kernels ~100 % of the wall time; 62.4 % of a pass is the MoE expert
-GEMM, which streams at ~76 % of achievable bandwidth. That gap — roughly
-+10 tok/s — is the only remaining lever of size, and it needs CUTLASS work.
+executes kernels ~100 % of the wall time and 62.4 % of a pass is the MoE
+expert GEMM — but that GEMM's *marginal* cost is 62 µs per expert touched,
+i.e. **89 % of achievable bandwidth**, not the 76 % this document used to
+claim. The 76 % averaged a fixed ~59 µs per-layer cost into the per-expert
+rate. The fixed part is what remains worth attacking, and
+[`patches/kernels/01`](../patches/kernels/01-moe-sf-padding-loop.patch)
+already removes 12–15 µs of it.
+
+What is left, sized from the same nsys capture:
+
+| item | ms/pass | note |
+| --- | ---: | --- |
+| three single-CTA MoE support kernels | 0.49 | `computeStrides` (1×128 threads), `topkGating` and `fusedBuildExpertMaps` (1×32) on a 48-SM part |
+| router GEMM | 0.74 | see below |
+| remaining SF-padding cost | ~0.4 | the per-row loop, not the flat one |
+
+The **router** (2880 → 128, bias) is `F.linear` on 737 KB of weights and gets
+36 GB/s: cuBLAS picks an 8-CTA `cutlass_80_wmma` kernel that costs 5.3 µs at
+M=1 but 14.6 µs at M=2 — and M=2 is exactly what K=1 speculation runs. A
+40-line Triton kernel, one CTA per expert, is bit-identical to `F.linear` and
+does not degrade from M=1 to M=2 (12.9 µs in both, versus 25.9 for `F.linear`
+at M=2, eager timings on a contended box). Landing it needs custom-op plumbing
+so it survives `torch.compile` and CUDA-graph capture.
 
 ## 7. Reproducing a row
 
 ```bash
 PROFILE=spec docker run ... ghcr.io/luka-loehr/gptoss-spark:0.1.0      # row 1
 PROFILE=plain docker run ... ghcr.io/luka-loehr/gptoss-spark:0.1.0     # row 2
-SPEC_K=2 PROFILE=spec docker run ...                                # row 3
+SPEC_K=2 PROFILE=spec docker run ...                                # row 5
 ```
+
+Rows 3 and 4 (the pre-patch numbers) need the 0.1.0 image, whose kernels are
+unpatched.
 
 Rows 5–13 need their own images; the exact tags and flags are listed in
 [NEGATIVE-RESULTS.md](NEGATIVE-RESULTS.md).

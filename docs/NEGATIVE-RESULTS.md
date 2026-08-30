@@ -102,7 +102,7 @@ pass inside `torch.cuda.synchronize`, and refuted three times:
 A Python profiler shows *which function the CPU sits in*, never whether it is
 working or waiting on the device. Do not size an optimization from one.
 
-## 8. MoE kernel configuration is already optimal
+## 8. MoE kernel configuration — and why the tile sweep proved nothing
 
 Both knobs were swept at production shapes (128 experts, top-4, 2944 padded
 dims), not at the synthetic shapes the upstream notes used:
@@ -113,6 +113,36 @@ dims), not at the synthetic shapes the upstream notes used:
 - **Pipeline stages**: the CUTLASS auto-carveout picks 3. Forcing 2 makes the
   kernel **2.2× slower** (83 GB/s) — this kernel lives on prefetch depth, not
   on occupancy. 4+ does not fit in shared memory.
+
+**The tile row above is not a tuning result.** `compute-sanitizer` on `64x64`
+shows the host launcher instantiated with `TileShape = <128,128,128>` while the
+device kernel it launches was compiled as `<64,64,128>`: the fork's
+`-DLOGICAL_TILE_M/N` flags rewrite the device-side namespace, but the host
+still picks its tile from a heuristic offering only four SM120 shapes. Grid and
+tile counts therefore disagree for every tile except `64x128` — which survives
+only because at M ≤ 64 it produces the same counts as `128x128`. Six "crashing
+tiles" are one bug seen six times. Two further blockers were found and fixed
+(an `EPI_TILE_N must divide CTA_N` static assert in the transposed path;
+`StageCountAutoCarveout` overshooting the smem limit by exactly 1 KB for
+`64x64`), so those two now compile and reach the same crash. A real tile study,
+including the transposed decode path the fork advertises, has to make the host
+dispatch agree with the compiled tile first.
+
+## 8b. Cooperative instead of Pingpong: no effect
+
+The launcher hardcodes `KernelPtrArrayTmaWarpSpecializedPingpong` and its own
+comment flags `KernelScheduleAuto` as untested. Pingpong splits the M tile
+across two math warpgroups, which looks wasteful when M is 1–2 tokens, so
+Cooperative was built and measured. Within noise at every expert count from 4
+to 8, never more than 1.5 % apart.
+
+Worth recording *how* this was nearly a false positive: the first comparison,
+using the stock harness at 30 iterations, showed Cooperative 5–6 % ahead. Two
+things were wrong with it. The harness silently could not force a union of more
+than `TOPK` experts (it sliced the pool back down to 4), and single 30-iteration
+timings on this box scatter by ±5 % — the same size as the claimed effect.
+`bench/moe_sched_bench.py` builds the routing explicitly and reports the min of
+5×60 iterations; the effect disappeared.
 
 ## 9. CUTLASS's block-scaled GEMV cannot be used
 

@@ -1,5 +1,41 @@
 # Changelog
 
+## Unreleased
+
+**Single stream 65.2 → 68.8 tok/s speculative, 62.4 → 65.0 plain.** Aggregate
+throughput at 30 concurrent users is unchanged within run-to-run noise, which
+is what a *fixed* per-layer cost predicts: at high concurrency there is enough
+real work per layer to absorb it.
+
+- `patches/kernels/01-moe-sf-padding-loop.patch` — `expandInputRowsKernel` and
+  `doActivationKernel` ended with a loop over `alignment × num_experts`
+  scale-factor padding slots (16384 iterations for gpt-oss) that reloaded two
+  `expert_first_token_offset` entries from global memory on every pass. At
+  decode batch sizes only a handful of experts are routed to, so over 99 % of
+  the iterations wrote nothing. Inverted to run once per expert; 12–15 µs
+  cheaper per MoE call and bit-identical in output (verified by dumping both
+  builds at fixed inputs).
+- `ops/shrink-draft-vocab.py` — cuts an Eagle3 head's 201088-row `lm_head` to
+  the tokens the target actually emits and emits the `d2t` table vLLM already
+  supports. At 32768 rows: 98.3 % held-out coverage, acceptance 61 % → 59.2 %,
+  +0.5 tok/s. Cannot change an answer — the target still verifies over the
+  full vocabulary.
+- `bench/moe_sched_bench.py` — forces an exact distinct-expert count (the older
+  harness silently could not exceed `TOPK`) and reports the min of 5×60
+  iterations, because single 30-iteration timings on this box scatter by ±5 %.
+
+**Corrected**: the MoE expert GEMM does *not* stream at 76 % of achievable with
++10 tok/s left in it. Separating the fixed and marginal terms gives ≈59 µs per
+layer + ≈62 µs per expert touched; the marginal rate is 223 GB/s, i.e. **89 %**.
+The 76 % figure averaged the fixed cost into the per-expert rate. The
+hand-written MXFP4 GEMV is correspondingly less attractive than documented.
+
+**Corrected**: "smaller tile shapes crash with illegal instruction" was one bug
+seen six times. The fork's `-DLOGICAL_TILE_M/N` flags rewrite the device-side
+kernel while the host launcher keeps picking its tile from a four-shape
+heuristic; only `64x128` survives, and only because at M ≤ 64 it yields the
+same tile counts as `128x128`.
+
 ## 0.1.0 — 2026-08-30
 
 First public release of the DGX Spark serving recipe for gpt-oss-120b.
