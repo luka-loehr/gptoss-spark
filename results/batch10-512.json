@@ -1,0 +1,540 @@
+{
+ "host_after": {
+  "captured_at_epoch_s": 1788012081.359826,
+  "hostname": "spark-host",
+  "mem_available_kb": 42867584,
+  "mem_total_kb": 127600812,
+  "memory_psi": "some avg10=0.04 avg60=1.31 avg300=2.25 total=679920359\nfull avg10=0.04 avg60=1.30 avg300=2.24 total=678213028",
+  "nvidia_smi": "Sat Aug 29 16:01:21 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.173.02             Driver Version: 580.173.02     CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GB10                    On  |   0000000F:01:00.0 Off |                  N/A |\n| N/A   67C    P0             51W /  N/A  | Not Supported          |     96%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            2620      G   /usr/lib/xorg/Xorg                       18MiB |\n|    0   N/A  N/A            2819      G   /usr/bin/gnome-shell                      6MiB |\n|    0   N/A  N/A         3466466      C   VLLM::EngineCore                      74074MiB |\n+-----------------------------------------------------------------------------------------+",
+  "platform": "Linux-6.17.0-1029-nvidia-aarch64-with-glibc2.39",
+  "python": "3.12.3",
+  "swap_free_kb": 15136944,
+  "swap_total_kb": 16777212,
+  "watchdog": {
+   "label": "com.spark-host.gptoss-lab=true",
+   "mem_available_gib": "40.88",
+   "mem_available_kb": "42867584",
+   "pid": "3463361",
+   "psi_memory_some_avg10": "0.04",
+   "read_failures": "0",
+   "soft_low_samples": "0",
+   "status": "monitoring",
+   "swap_free_kb": "15136936",
+   "swap_total_kb": "16777212",
+   "timestamp": "2026-08-29T16:01:21+02:00"
+  }
+ },
+ "host_before": {
+  "captured_at_epoch_s": 1788012027.8533435,
+  "hostname": "spark-host",
+  "mem_available_kb": 42892296,
+  "mem_total_kb": 127600812,
+  "memory_psi": "some avg10=0.76 avg60=3.12 avg300=2.70 total=679862776\nfull avg10=0.76 avg60=3.09 avg300=2.69 total=678155716",
+  "nvidia_smi": "Sat Aug 29 16:00:27 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.173.02             Driver Version: 580.173.02     CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GB10                    On  |   0000000F:01:00.0 Off |                  N/A |\n| N/A   48C    P0             12W /  N/A  | Not Supported          |      0%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            2620      G   /usr/lib/xorg/Xorg                       18MiB |\n|    0   N/A  N/A            2819      G   /usr/bin/gnome-shell                      6MiB |\n|    0   N/A  N/A         3466466      C   VLLM::EngineCore                      74074MiB |\n+-----------------------------------------------------------------------------------------+",
+  "platform": "Linux-6.17.0-1029-nvidia-aarch64-with-glibc2.39",
+  "python": "3.12.3",
+  "swap_free_kb": 15129016,
+  "swap_total_kb": 16777212,
+  "watchdog": {
+   "label": "com.spark-host.gptoss-lab=true",
+   "mem_available_gib": "40.92",
+   "mem_available_kb": "42906424",
+   "pid": "3463361",
+   "psi_memory_some_avg10": "0.76",
+   "read_failures": "0",
+   "soft_low_samples": "0",
+   "status": "monitoring",
+   "swap_free_kb": "15128644",
+   "swap_total_kb": "16777212",
+   "timestamp": "2026-08-29T16:00:27+02:00"
+  }
+ },
+ "metadata": {
+  "base_url": "http://127.0.0.1:8100/v1",
+  "benchmark_argv": [
+   "/lab/bench/bench.py",
+   "--base-url",
+   "http://127.0.0.1:8100/v1",
+   "--model",
+   "gptoss-lab",
+   "--prompts",
+   "/lab/bench/prompts.jsonl",
+   "--output",
+   "/lab/results/batch10-512.json",
+   "--warmup",
+   "2",
+   "--requests",
+   "10",
+   "--concurrency",
+   "10",
+   "--max-tokens",
+   "512",
+   "--reasoning-effort",
+   "low"
+  ],
+  "concurrency": 10,
+  "max_tokens": 512,
+  "model": "gptoss-lab",
+  "reasoning_effort": "low",
+  "requested_measured_requests": 10,
+  "requested_warmups": 2
+ },
+ "results": [
+  {
+   "channel_characters": {
+    "content": 1918,
+    "reasoning": 42,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 512,
+   "decode_seconds": 8.170559051,
+   "decode_tokens_per_second": 62.54162007891717,
+   "end_to_end_tokens_per_second": 59.52481122307763,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 6591,
+   "output_events": 503,
+   "output_sha256": "fb3e2eb672e7f1698fee59de5fa28f5e04e9632e487562ab45e9ccebfcdd2f4b",
+   "output_span_seconds": 8.60145525,
+   "prompt_id": "en_systems",
+   "prompt_tokens": 150,
+   "request_seconds": 8.601494418,
+   "sequence": 0,
+   "stream_events": 506,
+   "ttft_seconds": 0.430896199,
+   "usage": {
+    "completion_tokens": 512,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 150,
+    "total_tokens": 662
+   },
+   "valid": true,
+   "warmup": true
+  },
+  {
+   "channel_characters": {
+    "content": 2036,
+    "reasoning": 94,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 512,
+   "decode_seconds": 8.163242074,
+   "decode_tokens_per_second": 62.597678148923166,
+   "end_to_end_tokens_per_second": 60.76552741854438,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 6760,
+   "output_events": 503,
+   "output_sha256": "50b0a2d608ab3f27d012aac3327310226f498042bd70191d6734e6fcb22a5612",
+   "output_span_seconds": 8.425829936,
+   "prompt_id": "de_education",
+   "prompt_tokens": 167,
+   "request_seconds": 8.42586536,
+   "sequence": 1,
+   "stream_events": 506,
+   "ttft_seconds": 0.262587862,
+   "usage": {
+    "completion_tokens": 512,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 167,
+    "total_tokens": 679
+   },
+   "valid": true,
+   "warmup": true
+  },
+  {
+   "channel_characters": {
+    "content": 1934,
+    "reasoning": 353,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 512,
+   "decode_seconds": 35.967863259,
+   "decode_tokens_per_second": 14.207126965545719,
+   "end_to_end_tokens_per_second": 14.069051749635701,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 6983,
+   "output_events": 503,
+   "output_sha256": "b0ac6f9b1f1853c7df249432a14c40c394001200b45eaabbaf51a2dd6d08901b",
+   "output_span_seconds": 36.391933807,
+   "prompt_id": "code_scheduler",
+   "prompt_tokens": 143,
+   "request_seconds": 36.392019759,
+   "sequence": 2,
+   "stream_events": 506,
+   "ttft_seconds": 0.424070548,
+   "usage": {
+    "completion_tokens": 512,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 143,
+    "total_tokens": 655
+   },
+   "valid": true,
+   "warmup": false
+  },
+  {
+   "channel_characters": {
+    "content": 1530,
+    "reasoning": 236,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 512,
+   "decode_seconds": 35.968837659,
+   "decode_tokens_per_second": 14.206742092822099,
+   "end_to_end_tokens_per_second": 14.068316138344604,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 6497,
+   "output_events": 503,
+   "output_sha256": "f7721bb789b36a12a258d16e21290c279443878001b0c200b463fa1d66b89a5b",
+   "output_span_seconds": 36.393836687,
+   "prompt_id": "structured_policy",
+   "prompt_tokens": 150,
+   "request_seconds": 36.393878703,
+   "sequence": 3,
+   "stream_events": 506,
+   "ttft_seconds": 0.424999028,
+   "usage": {
+    "completion_tokens": 512,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 150,
+    "total_tokens": 662
+   },
+   "valid": true,
+   "warmup": false
+  },
+  {
+   "channel_characters": {
+    "content": 1849,
+    "reasoning": 161,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 512,
+   "decode_seconds": 35.967748427,
+   "decode_tokens_per_second": 14.207172323758982,
+   "end_to_end_tokens_per_second": 14.06917282701087,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 6690,
+   "output_events": 503,
+   "output_sha256": "783d3bb230f3be2ca29fdfc1376faac5238272d419c47ff9b58bbefcb9c1e371",
+   "output_span_seconds": 36.391620623,
+   "prompt_id": "en_systems",
+   "prompt_tokens": 150,
+   "request_seconds": 36.391654031,
+   "sequence": 4,
+   "stream_events": 506,
+   "ttft_seconds": 0.423872196,
+   "usage": {
+    "completion_tokens": 512,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 150,
+    "total_tokens": 662
+   },
+   "valid": true,
+   "warmup": false
+  },
+  {
+   "channel_characters": {
+    "content": 1921,
+    "reasoning": 91,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 512,
+   "decode_seconds": 35.930723997,
+   "decode_tokens_per_second": 14.221811952430054,
+   "end_to_end_tokens_per_second": 14.096757818545077,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 6654,
+   "output_events": 503,
+   "output_sha256": "c69e28805e37cafbf67b3a017f1f75ea3af8c795a010271afb9948dda2b4753e",
+   "output_span_seconds": 36.320408323,
+   "prompt_id": "de_education",
+   "prompt_tokens": 167,
+   "request_seconds": 36.320454947,
+   "sequence": 5,
+   "stream_events": 506,
+   "ttft_seconds": 0.389684326,
+   "usage": {
+    "completion_tokens": 512,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 167,
+    "total_tokens": 679
+   },
+   "valid": true,
+   "warmup": false
+  },
+  {
+   "channel_characters": {
+    "content": 1911,
+    "reasoning": 345,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 512,
+   "decode_seconds": 35.967889451,
+   "decode_tokens_per_second": 14.207116619843617,
+   "end_to_end_tokens_per_second": 14.069275107902977,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 6953,
+   "output_events": 503,
+   "output_sha256": "e9a69364eb229748921060e08b0fb31483a7eaaac483340077327f8dec409fd1",
+   "output_span_seconds": 36.391356063,
+   "prompt_id": "code_scheduler",
+   "prompt_tokens": 143,
+   "request_seconds": 36.391387231,
+   "sequence": 6,
+   "stream_events": 506,
+   "ttft_seconds": 0.423466612,
+   "usage": {
+    "completion_tokens": 512,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 143,
+    "total_tokens": 655
+   },
+   "valid": true,
+   "warmup": false
+  },
+  {
+   "channel_characters": {
+    "content": 1611,
+    "reasoning": 236,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 512,
+   "decode_seconds": 35.967875499,
+   "decode_tokens_per_second": 14.207122130808285,
+   "end_to_end_tokens_per_second": 14.069102477672319,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 6591,
+   "output_events": 502,
+   "output_sha256": "0e77f9437bdd73f601b458e42392fb08f148295290914a6cedb5ee30f34c5b75",
+   "output_span_seconds": 36.391802591,
+   "prompt_id": "structured_policy",
+   "prompt_tokens": 150,
+   "request_seconds": 36.391862703,
+   "sequence": 7,
+   "stream_events": 505,
+   "ttft_seconds": 0.423927092,
+   "usage": {
+    "completion_tokens": 512,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 150,
+    "total_tokens": 662
+   },
+   "valid": true,
+   "warmup": false
+  },
+  {
+   "channel_characters": {
+    "content": 1798,
+    "reasoning": 161,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 512,
+   "decode_seconds": 35.96076276,
+   "decode_tokens_per_second": 14.209932181093702,
+   "end_to_end_tokens_per_second": 14.057569004838363,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 6628,
+   "output_events": 503,
+   "output_sha256": "085f6578dd1f1cd7e0d1f2346beaffdc2dc403c44391d2c7fc9f0781f2a0c5bd",
+   "output_span_seconds": 36.421660091,
+   "prompt_id": "en_systems",
+   "prompt_tokens": 150,
+   "request_seconds": 36.421711803,
+   "sequence": 8,
+   "stream_events": 506,
+   "ttft_seconds": 0.460897331,
+   "usage": {
+    "completion_tokens": 512,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 150,
+    "total_tokens": 662
+   },
+   "valid": true,
+   "warmup": false
+  },
+  {
+   "channel_characters": {
+    "content": 2098,
+    "reasoning": 117,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 512,
+   "decode_seconds": 35.968788203,
+   "decode_tokens_per_second": 14.206761626664411,
+   "end_to_end_tokens_per_second": 14.06951608510515,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 6860,
+   "output_events": 503,
+   "output_sha256": "fa8771e71b3d016a47313934db24e9e8a674618c41afee5bdea393704ee06501",
+   "output_span_seconds": 36.390732766,
+   "prompt_id": "de_education",
+   "prompt_tokens": 167,
+   "request_seconds": 36.390792894,
+   "sequence": 9,
+   "stream_events": 506,
+   "ttft_seconds": 0.421944563,
+   "usage": {
+    "completion_tokens": 512,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 167,
+    "total_tokens": 679
+   },
+   "valid": true,
+   "warmup": false
+  },
+  {
+   "channel_characters": {
+    "content": 2015,
+    "reasoning": 209,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 512,
+   "decode_seconds": 35.96069196,
+   "decode_tokens_per_second": 14.20996015784119,
+   "end_to_end_tokens_per_second": 14.057892558233211,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 6881,
+   "output_events": 503,
+   "output_sha256": "432539f4a95cd3eb7abad975b85841db6edf610cdb3c43a0fca42ac6adbb62ee",
+   "output_span_seconds": 36.420821818,
+   "prompt_id": "code_scheduler",
+   "prompt_tokens": 143,
+   "request_seconds": 36.420862874,
+   "sequence": 10,
+   "stream_events": 506,
+   "ttft_seconds": 0.460129858,
+   "usage": {
+    "completion_tokens": 512,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 143,
+    "total_tokens": 655
+   },
+   "valid": true,
+   "warmup": false
+  },
+  {
+   "channel_characters": {
+    "content": 1726,
+    "reasoning": 138,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 512,
+   "decode_seconds": 35.959861496,
+   "decode_tokens_per_second": 14.21028832541085,
+   "end_to_end_tokens_per_second": 14.057980501616079,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 6544,
+   "output_events": 503,
+   "output_sha256": "4fb4e3985b7a6103cf9cb65ba0c4e95883c65b3a9ad98c3ace5831f300dd34bf",
+   "output_span_seconds": 36.420593978,
+   "prompt_id": "structured_policy",
+   "prompt_tokens": 150,
+   "request_seconds": 36.420636442,
+   "sequence": 11,
+   "stream_events": 506,
+   "ttft_seconds": 0.460732482,
+   "usage": {
+    "completion_tokens": 512,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 150,
+    "total_tokens": 662
+   },
+   "valid": true,
+   "warmup": false
+  }
+ ],
+ "schema_version": 1,
+ "summary": {
+  "all_measured_valid": true,
+  "completion_tokens_total": 5120,
+  "decode_tokens_per_second": {
+   "max": 14.221811952430054,
+   "median": 14.20714964465235,
+   "min": 14.206742092822099,
+   "p10": 14.20675967328018,
+   "p90": 14.21144068811277
+  },
+  "end_to_end_tokens_per_second": {
+   "max": 14.096757818545077,
+   "median": 14.06907711365401,
+   "min": 14.057569004838363
+  },
+  "measured_requests": 10,
+  "ttft_seconds": {
+   "max": 0.460897331,
+   "median": 0.42399882,
+   "min": 0.389684326
+  },
+  "valid_requests": 10
+ }
+}

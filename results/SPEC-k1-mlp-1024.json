@@ -1,0 +1,252 @@
+{
+ "host_after": {
+  "captured_at_epoch_s": 1788091585.4654748,
+  "hostname": "spark-host",
+  "mem_available_kb": 31864304,
+  "mem_total_kb": 127600812,
+  "memory_psi": "some avg10=0.00 avg60=0.07 avg300=0.38 total=742571613\nfull avg10=0.00 avg60=0.07 avg300=0.38 total=740793130",
+  "nvidia_smi": "Sun Aug 30 14:06:25 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.173.02             Driver Version: 580.173.02     CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GB10                    On  |   0000000F:01:00.0 Off |                  N/A |\n| N/A   71C    P0             49W /  N/A  | Not Supported          |     75%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            2620      G   /usr/lib/xorg/Xorg                       18MiB |\n|    0   N/A  N/A            2819      G   /usr/bin/gnome-shell                      6MiB |\n|    0   N/A  N/A          620216      C   VLLM::EngineCore                      85874MiB |\n+-----------------------------------------------------------------------------------------+",
+  "platform": "Linux-6.17.0-1029-nvidia-aarch64-with-glibc2.39",
+  "python": "3.12.3",
+  "swap_free_kb": 13882648,
+  "swap_total_kb": 16777212,
+  "watchdog": {
+   "label": "com.spark-host.gptoss-lab=true",
+   "mem_available_gib": "30.39",
+   "mem_available_kb": "31864748",
+   "pid": "3463361",
+   "psi_memory_some_avg10": "0.00",
+   "read_failures": "0",
+   "soft_low_samples": "0",
+   "status": "monitoring",
+   "swap_free_kb": "13882648",
+   "swap_total_kb": "16777212",
+   "timestamp": "2026-08-30T14:06:25+02:00"
+  }
+ },
+ "host_before": {
+  "captured_at_epoch_s": 1788091521.2334607,
+  "hostname": "spark-host",
+  "mem_available_kb": 31013340,
+  "mem_total_kb": 127600812,
+  "memory_psi": "some avg10=0.00 avg60=0.22 avg300=0.48 total=742559583\nfull avg10=0.00 avg60=0.22 avg300=0.48 total=740781285",
+  "nvidia_smi": "Sun Aug 30 14:05:21 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.173.02             Driver Version: 580.173.02     CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GB10                    On  |   0000000F:01:00.0 Off |                  N/A |\n| N/A   69C    P0             45W /  N/A  | Not Supported          |     96%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            2620      G   /usr/lib/xorg/Xorg                       18MiB |\n|    0   N/A  N/A            2819      G   /usr/bin/gnome-shell                      6MiB |\n|    0   N/A  N/A          620216      C   VLLM::EngineCore                      85874MiB |\n+-----------------------------------------------------------------------------------------+",
+  "platform": "Linux-6.17.0-1029-nvidia-aarch64-with-glibc2.39",
+  "python": "3.12.3",
+  "swap_free_kb": 13882340,
+  "swap_total_kb": 16777212,
+  "watchdog": {
+   "label": "com.spark-host.gptoss-lab=true",
+   "mem_available_gib": "29.58",
+   "mem_available_kb": "31019216",
+   "pid": "3463361",
+   "psi_memory_some_avg10": "0.00",
+   "read_failures": "0",
+   "soft_low_samples": "0",
+   "status": "monitoring",
+   "swap_free_kb": "13882336",
+   "swap_total_kb": "16777212",
+   "timestamp": "2026-08-30T14:05:21+02:00"
+  }
+ },
+ "metadata": {
+  "base_url": "http://127.0.0.1:8100/v1",
+  "benchmark_argv": [
+   "/lab/bench/bench.py",
+   "--base-url",
+   "http://127.0.0.1:8100/v1",
+   "--model",
+   "gptoss-lab",
+   "--prompts",
+   "/lab/bench/prompts.jsonl",
+   "--output",
+   "/lab/results/SPEC-k1-mlp-1024.json",
+   "--warmup",
+   "1",
+   "--requests",
+   "3",
+   "--concurrency",
+   "1",
+   "--max-tokens",
+   "1024",
+   "--reasoning-effort",
+   "low"
+  ],
+  "concurrency": 1,
+  "max_tokens": 1024,
+  "model": "gptoss-lab",
+  "reasoning_effort": "low",
+  "requested_measured_requests": 3,
+  "requested_warmups": 1
+ },
+ "results": [
+  {
+   "channel_characters": {
+    "content": 3436,
+    "reasoning": 84,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 1024,
+   "decode_seconds": 15.769653241,
+   "decode_tokens_per_second": 64.87143276811383,
+   "end_to_end_tokens_per_second": 64.29815439176662,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 9278,
+   "output_events": 613,
+   "output_sha256": "f3ac918d46829b5270fde195fed20fe9943d77540b9087b4bce10fd689305d2a",
+   "output_span_seconds": 15.925807042,
+   "prompt_id": "en_systems",
+   "prompt_tokens": 150,
+   "request_seconds": 15.925844258,
+   "sequence": 0,
+   "stream_events": 616,
+   "ttft_seconds": 0.156153801,
+   "usage": {
+    "completion_tokens": 1024,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 150,
+    "total_tokens": 1174
+   },
+   "valid": true,
+   "warmup": true
+  },
+  {
+   "channel_characters": {
+    "content": 3900,
+    "reasoning": 90,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 1024,
+   "decode_seconds": 15.923405039,
+   "decode_tokens_per_second": 64.24505295785939,
+   "end_to_end_tokens_per_second": 63.721190939868876,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 10019,
+   "output_events": 645,
+   "output_sha256": "bbb79bd65c742f28b97ead26459fb4cb562f529e7bbbc431edd578a5e5e4673c",
+   "output_span_seconds": 16.070007244,
+   "prompt_id": "de_education",
+   "prompt_tokens": 167,
+   "request_seconds": 16.070046668,
+   "sequence": 1,
+   "stream_events": 648,
+   "ttft_seconds": 0.146602205,
+   "usage": {
+    "completion_tokens": 1024,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 167,
+    "total_tokens": 1191
+   },
+   "valid": true,
+   "warmup": false
+  },
+  {
+   "channel_characters": {
+    "content": 4069,
+    "reasoning": 364,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 1024,
+   "decode_seconds": 15.771371953,
+   "decode_tokens_per_second": 64.86436329373406,
+   "end_to_end_tokens_per_second": 64.20220245311933,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 10122,
+   "output_events": 613,
+   "output_sha256": "234f5056d8b10753884def803135167ce762bbf0389efa9b4f988693a88e45b1",
+   "output_span_seconds": 15.949608594,
+   "prompt_id": "code_scheduler",
+   "prompt_tokens": 143,
+   "request_seconds": 15.94966509,
+   "sequence": 2,
+   "stream_events": 616,
+   "ttft_seconds": 0.178236641,
+   "usage": {
+    "completion_tokens": 1024,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 143,
+    "total_tokens": 1167
+   },
+   "valid": true,
+   "warmup": false
+  },
+  {
+   "channel_characters": {
+    "content": 3254,
+    "reasoning": 128,
+    "reasoning_content": 0,
+    "tool_calls": 0
+   },
+   "clock": "time.monotonic_ns",
+   "completion_tokens": 1024,
+   "decode_seconds": 16.074622475,
+   "decode_tokens_per_second": 63.64068590668409,
+   "end_to_end_tokens_per_second": 63.01730304435472,
+   "finish_reason": "length",
+   "http_status": 200,
+   "invalid_reasons": [],
+   "output_bytes": 9333,
+   "output_events": 628,
+   "output_sha256": "702477323f89ae3cef23b0d4bfd9889c98097357ad72a0dddc8ab845ed383773",
+   "output_span_seconds": 16.249505303,
+   "prompt_id": "structured_policy",
+   "prompt_tokens": 150,
+   "request_seconds": 16.249569191,
+   "sequence": 3,
+   "stream_events": 631,
+   "ttft_seconds": 0.174882828,
+   "usage": {
+    "completion_tokens": 1024,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "prompt_tokens": 150,
+    "total_tokens": 1174
+   },
+   "valid": true,
+   "warmup": false
+  }
+ ],
+ "schema_version": 1,
+ "summary": {
+  "all_measured_valid": true,
+  "completion_tokens_total": 3072,
+  "decode_tokens_per_second": {
+   "max": 64.86436329373406,
+   "median": 64.24505295785939,
+   "min": 63.64068590668409,
+   "p10": 63.76155931691915,
+   "p90": 64.74050122655912
+  },
+  "end_to_end_tokens_per_second": {
+   "max": 64.20220245311933,
+   "median": 63.721190939868876,
+   "min": 63.01730304435472
+  },
+  "measured_requests": 3,
+  "ttft_seconds": {
+   "max": 0.178236641,
+   "median": 0.174882828,
+   "min": 0.146602205
+  },
+  "valid_requests": 3
+ }
+}

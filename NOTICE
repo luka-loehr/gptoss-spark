@@ -1,0 +1,17 @@
+gptoss-spark
+Copyright 2026 Luka Löhr
+
+This product includes modifications of software developed by the vLLM project
+(https://github.com/vllm-project/vllm), licensed under the Apache License 2.0.
+The files under patches/ are unified diffs against vLLM
+0.28.1rc1.dev43+g6f7df92a8; applying them modifies vLLM sources.
+
+The SM121 CUTLASS MXFP4 kernels are built from the FlashInfer fork at
+https://github.com/christopherowen/flashinfer (see containers/Dockerfile for
+the pinned revision), which derives from FlashInfer (Apache-2.0) and NVIDIA
+CUTLASS (BSD-3-Clause). No kernel sources are redistributed in this
+repository; the container fetches them at build time.
+
+Model weights (openai/gpt-oss-120b) and the speculative decoding head
+(nvidia/gpt-oss-120b-Eagle3-v3) are not part of this repository or its
+container image and remain under their own licenses.

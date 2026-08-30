@@ -1,0 +1,16 @@
+--- a/vllm/model_executor/layers/fused_moe/oracle/mxfp4.py
++++ b/vllm/model_executor/layers/fused_moe/oracle/mxfp4.py
+@@ -471,6 +471,13 @@
+         # policy instead of exposing a separate backend name per precision.
+         if requested_activation_key is None:
+             return backends
++    if runner_backend == "flashinfer_cutlass" and requested_activation_key is None:
++        # SM12x (DGX Spark): the MXFP8-activation CUTLASS path is the only
++        # supported variant; do not filter it out on the default (None) key.
++        return [
++            Mxfp4MoeBackend.FLASHINFER_CUTLASS_MXFP4_MXFP8,
++            Mxfp4MoeBackend.FLASHINFER_CUTLASS_MXFP4_BF16,
++        ]
+     return _filter_by_activation(backends, requested_activation_key)
+ 
+ 
