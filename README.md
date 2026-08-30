@@ -27,8 +27,8 @@ median (`bench/bench.py`). Quality was verified separately, not assumed (§4).
 | SGLang `:spark` (previous production) | 52.6 tok/s | 0.70 s | 96.3 GiB |
 | llama.cpp b6fdd0ac, MXFP4 GGUF | 50.4 tok/s | 0.46 s | — |
 | stock vLLM nightly (any backend) | 33–35 tok/s | 0.25 s | — |
-| **this repo, plain** (`PROFILE=plain`) | **62.4 tok/s** | **0.21 s** | 83 GiB |
-| **this repo, speculative K=1** (`PROFILE=spec`) | **65.2 tok/s** | 0.24 s | 83 GiB |
+| **this repo, plain** (`PROFILE=plain`) | **65.0 tok/s** | **0.21 s** | 83 GiB |
+| **this repo, speculative K=1** (`PROFILE=spec`) | **68.8 tok/s** | 0.24 s | 83 GiB |
 
 Under concurrent load (`bench/loadtest.py`, N streaming requests at once,
 512 tokens each, aggregate = all tokens ÷ makespan):
@@ -70,6 +70,20 @@ Ranked by contribution, all measured in isolation:
    at all ([patches/04](patches/04-gpt-oss-eagle3-aux.patch),
    [patches/05](patches/05-eagle3-draft-quant.patch)). Then the counter-intuitive
    part: K=2 is *slower* than K=1 here. ([docs/SPECULATION.md](docs/SPECULATION.md))
+5. **An MoE support kernel that was mostly pointer chasing** (+2.6 tok/s plain,
+   +3.1 spec). Two kernels ended with a loop over `alignment × num_experts`
+   scale-factor padding slots — 16384 iterations — reloading two
+   `expert_first_token_offset` entries from global memory each time. At decode
+   batch sizes only a handful of experts are routed to, so over 99 % of those
+   iterations wrote nothing. Inverting the loop to run once per expert is
+   bit-identical in output and 12–15 µs cheaper per MoE call.
+   ([patches/kernels/01](patches/kernels/01-moe-sf-padding-loop.patch))
+6. **A draft head that stopped reading 201k rows to propose one token**
+   (+0.5 tok/s). NVIDIA's Eagle3 heads ship the full vocabulary and no `d2t`
+   table, so each draft step streamed a 307 MB `lm_head`. Cutting it to the
+   32768 tokens the target actually emits costs ~1.8 points of acceptance and
+   cannot change an answer — the target still verifies over all 201088.
+   ([ops/shrink-draft-vocab.py](ops/shrink-draft-vocab.py))
 
 ## 3. Where the time goes now
 
@@ -91,10 +105,15 @@ time.** There is no host-side stall left to reclaim; earlier claims of a
 *waiting for the GPU* from *making the GPU wait*, and were refuted three times
 over ([docs/NEGATIVE-RESULTS.md §7](docs/NEGATIVE-RESULTS.md)).
 
-The dominant kernel streams at ~190 GB/s against ~250 GB/s achievable on this
-part (76 %). Closing that gap is worth roughly +10 tok/s and is the only
-remaining lever of size; it requires CUTLASS work, not configuration
-([docs/KERNELS.md §4](docs/KERNELS.md)).
+The table above is measured *before* the kernel patch in §2.5, and its
+per-expert rate is what led an earlier version of this file to claim the MoE
+GEMM streams at 76 % of achievable with +10 tok/s left in it. Sweeping the
+distinct-expert count one at a time separates the terms:
+**≈59 µs fixed per layer + ≈62 µs per expert touched**, and 62 µs for 13.8 MB
+is 223 GB/s — **89 % of achievable**. The GEMM is close to the roofline; the
+fixed part, 2.1 ms of a 24.6 ms pass across six kernels that move almost no
+data, is the lever. §2.5 takes 12–15 µs of it; the router GEMM and three
+single-CTA kernels are what remain ([docs/KERNELS.md §3 and §5](docs/KERNELS.md)).
 
 ## 4. Quality
 
@@ -125,8 +144,13 @@ docker run --gpus all --network host --ipc host --shm-size 32g \
 ```
 
 `PROFILE=plain` serves many users (32 slots, 300 tok/s aggregate at 30);
-`PROFILE=spec` is the single-user record (65 tok/s) and additionally needs the
+`PROFILE=spec` is the single-user record (69 tok/s) and additionally needs the
 Eagle3 head mounted at `/eagle`. Full matrix: [docs/SERVING.md](docs/SERVING.md).
+
+> The published `0.1.0` image predates the kernel patch in §2.5 and the draft
+> vocabulary tool in §2.6, so it serves 65.2 / 62.4 tok/s, not 68.8 / 65.0.
+> Build from this tree (`ops/publish-ghcr.sh`) for the current numbers; the
+> next tagged image will include them.
 
 First start JIT-compiles the SM121 kernels (~10 min) — mount the cache volume
 shown above and every later start is warm.
