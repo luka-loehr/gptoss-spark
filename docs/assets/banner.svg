@@ -1,0 +1,79 @@
+<svg width="1280" height="320" viewBox="0 0 1280 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="gptoss-spark banner">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1120"/>
+      <stop offset="0.55" stop-color="#0e1628"/>
+      <stop offset="1" stop-color="#101b30"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#76b900"/>
+      <stop offset="1" stop-color="#38bdf8"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1f6feb" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#76b900" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-40%" width="140%" height="180%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+
+  <rect width="1280" height="320" fill="url(#bg)"/>
+
+  <!-- expert-routing motif: 128 columns, four lit (top-4 of 128) -->
+  <g opacity="0.5">
+    <g fill="#1e293b">
+      <rect x="812" y="196" width="6" height="34" rx="2"/>
+      <rect x="826" y="182" width="6" height="48" rx="2"/>
+      <rect x="840" y="204" width="6" height="26" rx="2"/>
+      <rect x="854" y="170" width="6" height="60" rx="2"/>
+      <rect x="868" y="200" width="6" height="30" rx="2"/>
+      <rect x="882" y="188" width="6" height="42" rx="2"/>
+      <rect x="896" y="206" width="6" height="24" rx="2"/>
+      <rect x="910" y="176" width="6" height="54" rx="2"/>
+      <rect x="924" y="198" width="6" height="32" rx="2"/>
+      <rect x="938" y="184" width="6" height="46" rx="2"/>
+      <rect x="952" y="208" width="6" height="22" rx="2"/>
+      <rect x="966" y="192" width="6" height="38" rx="2"/>
+      <rect x="980" y="202" width="6" height="28" rx="2"/>
+      <rect x="994" y="178" width="6" height="52" rx="2"/>
+      <rect x="1008" y="196" width="6" height="34" rx="2"/>
+      <rect x="1022" y="186" width="6" height="44" rx="2"/>
+      <rect x="1036" y="204" width="6" height="26" rx="2"/>
+      <rect x="1050" y="190" width="6" height="40" rx="2"/>
+      <rect x="1064" y="200" width="6" height="30" rx="2"/>
+      <rect x="1078" y="180" width="6" height="50" rx="2"/>
+      <rect x="1092" y="198" width="6" height="32" rx="2"/>
+      <rect x="1106" y="188" width="6" height="42" rx="2"/>
+      <rect x="1120" y="206" width="6" height="24" rx="2"/>
+      <rect x="1134" y="194" width="6" height="36" rx="2"/>
+      <rect x="1148" y="184" width="6" height="46" rx="2"/>
+      <rect x="1162" y="202" width="6" height="28" rx="2"/>
+      <rect x="1176" y="192" width="6" height="38" rx="2"/>
+      <rect x="1190" y="182" width="6" height="48" rx="2"/>
+    </g>
+    <g fill="url(#accent)">
+      <rect x="854" y="140" width="6" height="90" rx="2"/>
+      <rect x="938" y="150" width="6" height="80" rx="2"/>
+      <rect x="1022" y="146" width="6" height="84" rx="2"/>
+      <rect x="1134" y="156" width="6" height="74" rx="2"/>
+    </g>
+  </g>
+
+  <!-- throughput bar: 52.6 -> 65.2 -->
+  <g transform="translate(812,258)">
+    <rect x="0" y="0" width="300" height="8" rx="4" fill="#1e293b"/>
+    <rect x="0" y="0" width="242" height="8" rx="4" fill="url(#bar)"/>
+    <text x="0" y="30" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="15" fill="#64748b">52.6</text>
+    <text x="212" y="30" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="15" fill="#94a3b8">65.2 tok/s</text>
+  </g>
+
+  <g filter="url(#soft)" opacity="0.28">
+    <ellipse cx="300" cy="150" rx="220" ry="70" fill="#1f6feb"/>
+  </g>
+
+  <text x="88" y="132" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="62" font-weight="600" fill="#e2e8f0">gptoss-spark</text>
+  <rect x="90" y="152" width="150" height="4" rx="2" fill="url(#accent)"/>
+  <text x="90" y="200" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="23" fill="#94a3b8">gpt-oss-120b on one DGX Spark, tuned to the memory roofline</text>
+  <text x="90" y="240" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="17" fill="#64748b">MXFP4 · sm_121 · 5 patches on upstream vLLM · measured, not estimated</text>
+</svg>

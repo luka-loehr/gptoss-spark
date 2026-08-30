@@ -1,0 +1,70 @@
+--- a/vllm/model_executor/layers/fused_moe/experts/flashinfer_cutlass_moe.py
++++ b/vllm/model_executor/layers/fused_moe/experts/flashinfer_cutlass_moe.py
+@@ -33,8 +33,55 @@
+ )
+ 
+ logger = init_logger(__name__)
++
++# ---------------------------------------------------------------------------
++# DGX Spark (SM121) kernel override: route the CUTLASS fused-MoE call to the
++# tuned flashinfer_spark kernels (christopherowen fork, 0.6.1) instead of the
++# bundled flashinfer. Enabled via VLLM_SPARK_CUTLASS=1 with the package
++# mounted at /opt/ffs and its JIT cache at ~/.cache/flashinfer.
++# ---------------------------------------------------------------------------
++import os as _os
++
++_USE_SPARK = _os.environ.get("VLLM_SPARK_CUTLASS", "0") == "1"
++_spark_moe = None
++_spark_sig_params = None
++_spark_activation_type = None
++
++
++def _load_spark():
++    global _spark_moe, _spark_sig_params, _spark_activation_type
++    if _spark_moe is not None:
++        return
++    import inspect
++    import sys
++
++    _os.environ.setdefault("FLASHINFER_DISABLE_VERSION_CHECK", "1")
++    if "/opt/ffs" not in sys.path:
++        sys.path.insert(0, "/opt/ffs")
++    from flashinfer_spark.fused_moe import cutlass_fused_moe as spark_moe
++    from flashinfer_spark.fused_moe.core import ActivationType as SparkAct
+ 
++    _spark_moe = spark_moe
++    _spark_sig_params = set(inspect.signature(spark_moe).parameters)
++    _spark_activation_type = SparkAct
++    logger.info_once("SPARK: using flashinfer_spark cutlass_fused_moe (SM121 tuned)")
+ 
++
++def _spark_cutlass_fused_moe(**kwargs):
++    _load_spark()
++    act = kwargs.get("activation_type")
++    if act is not None:
++        name = getattr(act, "name", None)
++        kwargs["activation_type"] = getattr(
++            _spark_activation_type, name if name else "Swiglu", _spark_activation_type.Swiglu
++        )
++    filtered = {k: v for k, v in kwargs.items() if k in _spark_sig_params}
++    dropped = set(kwargs) - set(filtered)
++    if dropped:
++        logger.debug_once(f"SPARK: dropped unsupported kwargs {sorted(dropped)}")
++    return _spark_moe(**filtered)
++
++
+ def is_valid_flashinfer_cutlass_fused_moe(
+     hidden_states: torch.Tensor, w1: torch.Tensor, w2: torch.Tensor
+ ) -> bool:
+@@ -364,7 +411,10 @@
+             fc1_expert_weights = w1
+             fc2_expert_weights = w2
+ 
+-        _ = flashinfer_cutlass_fused_moe(
++        _fused_moe_fn = (
++            _spark_cutlass_fused_moe if _USE_SPARK else flashinfer_cutlass_fused_moe
++        )
++        _ = _fused_moe_fn(
+             input=hidden_states,
+             token_selected_experts=topk_ids.to(torch.int),
+             token_final_scales=topk_weights,

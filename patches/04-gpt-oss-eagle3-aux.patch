@@ -1,0 +1,63 @@
+--- a/vllm/model_executor/models/gpt_oss.py
++++ b/vllm/model_executor/models/gpt_oss.py
+@@ -352,6 +352,38 @@
+         else:
+             self._load_unquantized_expert(expert_data, loaded_weight, shard_id)
+         return True if return_success else None
++
++
++
++# --- SPARK Eagle3-retraining capture (module-level so torch.compile can
++# constant-fold the disabled case away; capture runs use --enforce-eager) ---
++import os as _spark_cap_os
++import time as _spark_cap_time
++
++_SPARK_CAPTURE_DIR = _spark_cap_os.environ.get("VLLM_SPARK_CAPTURE_DIR", "")
++
++
++def _spark_capture(input_ids, positions, aux_hidden_states):
++    try:
++        if input_ids is None or input_ids.shape[0] < 64:
++            return
++        path = "%s/cap_%d_%d.pt" % (
++            _SPARK_CAPTURE_DIR,
++            int(_spark_cap_time.time() * 1000),
++            int(input_ids.shape[0]),
++        )
++        torch.save(
++            {
++                "input_ids": input_ids.detach().cpu(),
++                "positions": positions.detach().cpu(),
++                "aux": torch.cat([t.detach() for t in aux_hidden_states], dim=-1)
++                .to(torch.bfloat16)
++                .cpu(),
++            },
++            path,
++        )
++    except Exception:
++        pass
+ 
+ 
+ class MLPBlock(torch.nn.Module):
+@@ -534,6 +566,11 @@
+         x, _ = self.norm(x, residual)
+ 
+         if len(aux_hidden_states) > 0:
++            # SPARK capture (see _spark_capture below): only active when
++            # VLLM_SPARK_CAPTURE_DIR was set at import time; requires
++            # --enforce-eager (the dump is not torch.compile-traceable).
++            if _SPARK_CAPTURE_DIR:
++                _spark_capture(input_ids, positions, aux_hidden_states)
+             return x, aux_hidden_states
+         return x
+ 
+@@ -1456,6 +1493,9 @@
+         self.lm_head = ParallelLMHead(
+             self.config.vocab_size,
+             self.config.hidden_size,
++            # SPARK: hand the quant config to the lm_head so MXFP4 lm_head
++            # quantization (VLLM_SPARK_DENSE) can engage; None-safe otherwise.
++            quant_config=vllm_config.quant_config,
+             prefix=maybe_prefix(prefix, "lm_head"),
+         )
+         self.logits_processor = LogitsProcessor(self.config.vocab_size)
