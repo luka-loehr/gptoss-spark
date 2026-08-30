@@ -1,6 +1,6 @@
 --- a/vllm/model_executor/layers/fused_moe/experts/flashinfer_cutlass_moe.py
 +++ b/vllm/model_executor/layers/fused_moe/experts/flashinfer_cutlass_moe.py
-@@ -33,8 +33,55 @@
+@@ -33,8 +33,57 @@
  )
  
  logger = init_logger(__name__)
@@ -9,7 +9,8 @@
 +# DGX Spark (SM121) kernel override: route the CUTLASS fused-MoE call to the
 +# tuned flashinfer_spark kernels (christopherowen fork, 0.6.1) instead of the
 +# bundled flashinfer. Enabled via VLLM_SPARK_CUTLASS=1 with the package
-+# mounted at /opt/ffs and its JIT cache at ~/.cache/flashinfer.
++# installed at FLASHINFER_SPARK_DIR (default /opt/flashinfer-spark) and its
++# JIT cache mounted at ~/.cache/flashinfer.
 +# ---------------------------------------------------------------------------
 +import os as _os
 +
@@ -27,8 +28,9 @@
 +    import sys
 +
 +    _os.environ.setdefault("FLASHINFER_DISABLE_VERSION_CHECK", "1")
-+    if "/opt/ffs" not in sys.path:
-+        sys.path.insert(0, "/opt/ffs")
++    spark_dir = _os.environ.get("FLASHINFER_SPARK_DIR", "/opt/flashinfer-spark")
++    if spark_dir not in sys.path:
++        sys.path.insert(0, spark_dir)
 +    from flashinfer_spark.fused_moe import cutlass_fused_moe as spark_moe
 +    from flashinfer_spark.fused_moe.core import ActivationType as SparkAct
  
