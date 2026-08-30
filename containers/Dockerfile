@@ -73,5 +73,10 @@ ENV PYTHONPATH=/opt/flashinfer-spark \
     PROFILE=plain \
     PORT=8100
 
+LABEL org.opencontainers.image.source="https://github.com/luka-loehr/gptoss-spark" \
+      org.opencontainers.image.description="gpt-oss-120b on one NVIDIA DGX Spark (GB10, sm_121): 65 tok/s single-stream, 300 tok/s aggregate at 30 users" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      org.opencontainers.image.title="gptoss-spark"
+
 EXPOSE 8100
 ENTRYPOINT ["/usr/local/bin/gptoss-entrypoint"]
