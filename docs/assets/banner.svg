@@ -16,9 +16,9 @@
     <text x="96" y="216" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="21" fill="#a1a1aa">gpt-oss-120b on one DGX Spark, tuned to the memory roofline</text>
 
     <g font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="#71717a" font-size="15">
-      <text x="96" y="262">65.2 tok/s single stream</text>
+      <text x="96" y="262">68.9 tok/s single stream</text>
       <text x="96" y="288">300 tok/s aggregate at 30 concurrent users</text>
-      <text x="96" y="314">MXFP4 · sm_121 · five patches on upstream vLLM</text>
+      <text x="96" y="314">MXFP4 · sm_121 · six patches on upstream vLLM and its MoE kernels</text>
     </g>
   </g>
 
