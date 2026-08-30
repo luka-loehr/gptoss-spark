@@ -46,7 +46,7 @@ RUN git clone --depth 1 "${FLASHINFER_FORK}" /tmp/fi \
                              s/\bfrom flashinfer\./from flashinfer_spark./g; \
                              s/\bimport flashinfer\b/import flashinfer_spark/g; \
                              s/\bimport flashinfer\./import flashinfer_spark./g" \
-    && cd flashinfer_spark/data \
+    && mkdir -p flashinfer_spark/data && cd flashinfer_spark/data \
     && rm -f csrc include cutlass spdlog tvm_ffi \
     && ln -s /opt/flashinfer-spark/csrc csrc \
     && ln -s /opt/flashinfer-spark/include include \
