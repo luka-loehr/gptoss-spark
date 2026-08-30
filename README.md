@@ -121,7 +121,7 @@ docker run --gpus all --network host --ipc host --shm-size 32g \
   -v /srv/models/gpt-oss-120b:/model:ro \
   -v /srv/tiktoken:/tiktoken:ro \
   -v gptoss-jit:/root/.cache/flashinfer \
-  -e PROFILE=plain ghcr.io/OWNER/gptoss-spark:VERSION
+  -e PROFILE=plain ghcr.io/luka-loehr/gptoss-spark:0.1.0
 ```
 
 `PROFILE=plain` serves many users (32 slots, 300 tok/s aggregate at 30);
@@ -134,7 +134,7 @@ shown above and every later start is warm.
 ### From source
 
 ```bash
-OWNER=<your-gh-user> VERSION=<x.y.z> ops/publish-ghcr.sh   # build + push, on the Spark
+OWNER=luka-loehr VERSION=0.1.0 ops/publish-ghcr.sh   # build + push, on the Spark
 ops/apply-patches.sh                                       # or patch an existing install
 bench/bench.py --base-url http://127.0.0.1:8100/v1 --model gptoss \
   --prompts bench/prompts.jsonl --requests 4 --concurrency 1 --max-tokens 512
