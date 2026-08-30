@@ -25,13 +25,13 @@ docker run --gpus all --network host --ipc host --shm-size 32g \
   -v /srv/models/gpt-oss-120b:/model:ro \
   -v /srv/models/gpt-oss-120b-Eagle3-v3:/eagle:ro \
   -v /srv/tiktoken:/tiktoken:ro -v gptoss-jit:/root/.cache/flashinfer \
-  -e PROFILE=spec ghcr.io/OWNER/gptoss-spark:VERSION
+  -e PROFILE=spec ghcr.io/luka-loehr/gptoss-spark:0.1.0
 
 # many users
 docker run --gpus all --network host --ipc host --shm-size 32g \
   -v /srv/models/gpt-oss-120b:/model:ro \
   -v /srv/tiktoken:/tiktoken:ro -v gptoss-jit:/root/.cache/flashinfer \
-  -e PROFILE=plain ghcr.io/OWNER/gptoss-spark:VERSION
+  -e PROFILE=plain ghcr.io/luka-loehr/gptoss-spark:0.1.0
 ```
 
 ## 2. Knobs

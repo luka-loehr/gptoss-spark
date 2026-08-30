@@ -97,8 +97,8 @@ GEMM, which streams at ~76 % of achievable bandwidth. That gap — roughly
 ## 7. Reproducing a row
 
 ```bash
-PROFILE=spec docker run ... ghcr.io/OWNER/gptoss-spark:VERSION      # row 1
-PROFILE=plain docker run ... ghcr.io/OWNER/gptoss-spark:VERSION     # row 2
+PROFILE=spec docker run ... ghcr.io/luka-loehr/gptoss-spark:0.1.0      # row 1
+PROFILE=plain docker run ... ghcr.io/luka-loehr/gptoss-spark:0.1.0     # row 2
 SPEC_K=2 PROFILE=spec docker run ...                                # row 3
 ```
 
