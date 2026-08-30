@@ -2,33 +2,36 @@
 
 [![Target](https://img.shields.io/badge/target-sm__121%20(DGX%20Spark%20GB10)-1f6feb?style=flat)](docs/SERVING.md)
 [![Model](https://img.shields.io/badge/model-gpt--oss--120b%20MXFP4-76B900?style=flat)](https://huggingface.co/openai/gpt-oss-120b)
-[![Engine](https://img.shields.io/badge/engine-vLLM%20nightly%20%2B%205%20patches-orange?style=flat)](patches/)
+[![Engine](https://img.shields.io/badge/engine-vLLM%20nightly%20%2B%206%20patches-orange?style=flat)](patches/)
 [![License](https://img.shields.io/badge/License-Apache--2.0-blue?style=flat)](LICENSE)
 
 Serving `gpt-oss-120b` on a single NVIDIA DGX Spark (GB10, `sm_121`) at
-**65 tokens/s single-stream** and **300 tokens/s aggregate at 30 concurrent
+**69 tokens/s single-stream** and **300 tokens/s aggregate at 30 concurrent
 users** — up from 52.6 and 244 on the previously deployed SGLang stack.
 
-The speedup is not a model change and not a different quantization. It is
-five small patches on current upstream vLLM, a set of CUTLASS MXFP4 kernels
-built for this exact chip, and one non-obvious serving decision
-(speculation depth K=1). Every number below was measured on the machine with
-the harness in [`bench/`](bench/); every approach that failed is written down
-with the same detail as the ones that shipped ([docs/NEGATIVE-RESULTS.md](docs/NEGATIVE-RESULTS.md)).
+The speedup is not a model change and not a different quantization. It is six
+small patches — five on current upstream vLLM, one on the MoE kernels — a set
+of CUTLASS MXFP4 kernels built for this exact chip, and one non-obvious
+serving decision (speculation depth K=1). Every number below was measured on
+the machine with the harness in [`bench/`](bench/); every approach that failed
+is written down with the same detail as the ones that shipped
+([docs/NEGATIVE-RESULTS.md](docs/NEGATIVE-RESULTS.md)).
 
 ## 1. Results
 
 One DGX Spark, GB10, 121 GB unified memory, `sm_121`. Identical benchmark for
 every row: 4 requests × 512 tokens, single stream, temperature 0, decode
 median (`bench/bench.py`). Quality was verified separately, not assumed (§4).
+The two bold rows were measured from `ghcr.io/luka-loehr/gptoss-spark:0.2.0`
+itself, not from a lab configuration — see [docs/RESULTS.md §1](docs/RESULTS.md).
 
 | serving path | decode | TTFT | RAM cap |
 | --- | ---: | ---: | ---: |
 | SGLang `:spark` (previous production) | 52.6 tok/s | 0.70 s | 96.3 GiB |
 | llama.cpp b6fdd0ac, MXFP4 GGUF | 50.4 tok/s | 0.46 s | — |
 | stock vLLM nightly (any backend) | 33–35 tok/s | 0.25 s | — |
-| **this repo, plain** (`PROFILE=plain`) | **65.0 tok/s** | **0.21 s** | 83 GiB |
-| **this repo, speculative K=1** (`PROFILE=spec`) | **68.8 tok/s** | 0.24 s | 83 GiB |
+| **this repo, plain** (`PROFILE=plain`) | **64.3 tok/s** | **0.21 s** | 83 GiB |
+| **this repo, speculative K=1** (`PROFILE=spec`) | **68.9 tok/s** | 0.24 s | 83 GiB |
 
 Under concurrent load (`bench/loadtest.py`, N streaming requests at once,
 512 tokens each, aggregate = all tokens ÷ makespan):
@@ -140,17 +143,16 @@ docker run --gpus all --network host --ipc host --shm-size 32g \
   -v /srv/models/gpt-oss-120b:/model:ro \
   -v /srv/tiktoken:/tiktoken:ro \
   -v gptoss-jit:/root/.cache/flashinfer \
-  -e PROFILE=plain ghcr.io/luka-loehr/gptoss-spark:0.1.0
+  -e PROFILE=plain ghcr.io/luka-loehr/gptoss-spark:0.2.0
 ```
 
 `PROFILE=plain` serves many users (32 slots, 300 tok/s aggregate at 30);
 `PROFILE=spec` is the single-user record (69 tok/s) and additionally needs the
 Eagle3 head mounted at `/eagle`. Full matrix: [docs/SERVING.md](docs/SERVING.md).
 
-> The published `0.1.0` image predates the kernel patch in §2.5 and the draft
-> vocabulary tool in §2.6, so it serves 65.2 / 62.4 tok/s, not 68.8 / 65.0.
-> Build from this tree (`ops/publish-ghcr.sh`) for the current numbers; the
-> next tagged image will include them.
+The `PROFILE=spec` figure assumes a draft head whose `lm_head` has been cut to
+32768 rows by [`ops/shrink-draft-vocab.py`](ops/shrink-draft-vocab.py) (§2.6);
+NVIDIA's stock head works unchanged and costs ~0.5 tok/s.
 
 First start JIT-compiles the SM121 kernels (~10 min) — mount the cache volume
 shown above and every later start is warm.
@@ -158,7 +160,7 @@ shown above and every later start is warm.
 ### From source
 
 ```bash
-OWNER=luka-loehr VERSION=0.1.0 ops/publish-ghcr.sh   # build + push, on the Spark
+OWNER=luka-loehr VERSION=0.2.0 ops/publish-ghcr.sh   # build + push, on the Spark
 ops/apply-patches.sh                                       # or patch an existing install
 bench/bench.py --base-url http://127.0.0.1:8100/v1 --model gptoss \
   --prompts bench/prompts.jsonl --requests 4 --concurrency 1 --max-tokens 512

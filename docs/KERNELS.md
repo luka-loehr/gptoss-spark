@@ -116,8 +116,8 @@ expert count, and end to end
 
 | | before | after |
 | --- | ---: | ---: |
-| `PROFILE=plain`, single stream | 62.4 | **65.0** |
-| `PROFILE=spec` K=1, single stream | 65.4 | **68.0–69.0** |
+| `PROFILE=plain`, single stream | 62.4 | **64.3** (image) / 65.0 (lab script) |
+| `PROFILE=spec` K=1, single stream | 65.4 | **68.9** |
 | 30 concurrent users, aggregate | 299.5 | 270–308 (unchanged, noisy) |
 
 The win is confined to small batches, which is exactly what a *fixed*

@@ -8,7 +8,7 @@ classroom, and vice versa.
 
 | | `PROFILE=spec` | `PROFILE=plain` |
 | --- | --- | --- |
-| single stream | **68.8 tok/s** | 65.0 tok/s |
+| single stream | **68.9 tok/s** | 64.3 tok/s |
 | concurrent slots | 2 | 32 |
 | 30 users, aggregate | not applicable | **299.5 tok/s** |
 | 30 users, TTFT median | — | 1.2 s |
@@ -25,13 +25,13 @@ docker run --gpus all --network host --ipc host --shm-size 32g \
   -v /srv/models/gpt-oss-120b:/model:ro \
   -v /srv/models/gpt-oss-120b-Eagle3-v3:/eagle:ro \
   -v /srv/tiktoken:/tiktoken:ro -v gptoss-jit:/root/.cache/flashinfer \
-  -e PROFILE=spec ghcr.io/luka-loehr/gptoss-spark:0.1.0
+  -e PROFILE=spec ghcr.io/luka-loehr/gptoss-spark:0.2.0
 
 # many users
 docker run --gpus all --network host --ipc host --shm-size 32g \
   -v /srv/models/gpt-oss-120b:/model:ro \
   -v /srv/tiktoken:/tiktoken:ro -v gptoss-jit:/root/.cache/flashinfer \
-  -e PROFILE=plain ghcr.io/luka-loehr/gptoss-spark:0.1.0
+  -e PROFILE=plain ghcr.io/luka-loehr/gptoss-spark:0.2.0
 ```
 
 ## 2. Knobs

@@ -10,27 +10,35 @@ one DGX Spark, GB10, 121 GB, `sm_121`. Raw artifacts are in
 
 | # | configuration | decode | note |
 | ---: | --- | ---: | --- |
-| 1 | **+ MoE SF-padding patch + 32k draft vocab, K=1** | **68.8** | this repo, `PROFILE=spec` |
-| 2 | **+ MoE SF-padding patch, plain** | **65.0** | this repo, `PROFILE=plain` |
-| 3 | vLLM nightly + patches, Eagle3 K=1 | 65.2 | before the kernel patch |
-| 4 | vLLM nightly + patches, plain | 62.4 | before the kernel patch |
-| 5 | vLLM nightly + patches, Eagle3 K=2 | 60.7 | deeper speculation loses |
-| 6 | fork image (`vllm-mxfp4-spark`, Jan-2026 vLLM) | 61.0 | where the kernels come from |
-| 7 | SGLang `:spark` 0.5.4 | 52.6 | previous production |
-| 8 | llama.cpp b6fdd0ac, MXFP4 GGUF | 50.4 | `llama-bench tg64` claims 54.6 |
-| 9 | vLLM nightly, `flashinfer_cutlass`, no dense quant | 34.7 | patches 01+02 only |
-| 10 | vLLM nightly, `marlin` | 34.7 | |
-| 11 | vLLM nightly, `humming` | 35.1 | 33.2 even with dense quant |
-| 12 | SGLang `dev-cu13` (0.5.17+) | 34.0 | newer, slower on this chip |
-| 13 | NVIDIA vLLM 26.07 + Eagle3 D1 | 42.2 | earlier lab qualification |
-| 14 | NVIDIA vLLM 26.07, no speculation | 37.3 | |
-| 15 | TensorRT-LLM 1.3.0rc12 + Eagle | 20.2 | |
+| 1 | **image 0.2.0, `PROFILE=spec`** (K=1, 32k draft vocab) | **68.9** | 68.9 / 69.0 / 68.1 / 68.8 across runs |
+| 2 | **image 0.2.0, `PROFILE=plain`** | **64.3** | 64.3 / 64.4 |
+| 3 | same code, lab launch script, plain | 65.0 | image adds `--max-num-batched-tokens 8192`, ~1 % |
+| 4 | vLLM nightly + patches, Eagle3 K=1 | 65.2 | before the kernel patch |
+| 5 | vLLM nightly + patches, plain | 62.4 | before the kernel patch |
+| 6 | vLLM nightly + patches, Eagle3 K=2 | 60.7 | deeper speculation loses |
+| 7 | fork image (`vllm-mxfp4-spark`, Jan-2026 vLLM) | 61.0 | where the kernels come from |
+| 8 | SGLang `:spark` 0.5.4 | 52.6 | previous production |
+| 9 | llama.cpp b6fdd0ac, MXFP4 GGUF | 50.4 | `llama-bench tg64` claims 54.6 |
+| 10 | vLLM nightly, `flashinfer_cutlass`, no dense quant | 34.7 | patches 01+02 only |
+| 11 | vLLM nightly, `marlin` | 34.7 | |
+| 12 | vLLM nightly, `humming` | 35.1 | 33.2 even with dense quant |
+| 13 | SGLang `dev-cu13` (0.5.17+) | 34.0 | newer, slower on this chip |
+| 14 | NVIDIA vLLM 26.07 + Eagle3 D1 | 42.2 | earlier lab qualification |
+| 15 | NVIDIA vLLM 26.07, no speculation | 37.3 | |
+| 16 | TensorRT-LLM 1.3.0rc12 + Eagle | 20.2 | |
 
-Rows 13–15 are from the qualification round that preceded this work; they used
+Rows 14–16 are from the qualification round that preceded this work; they used
 the same benchmark and the same weights.
 
-Row 1 is the median of three runs (69.0 / 68.1 / 68.8); rows 1 and 2 differ
-from 3 and 4 only by
+Rows 1 and 2 were measured from the published image, started against the real
+checkpoint with a JIT cache from which the MoE module had been deleted — so the
+image compiled that kernel from its own patched source rather than reusing one
+built elsewhere. Its log confirms the intended path
+(`Using 'FLASHINFER_CUTLASS_MXFP4_MXFP8' Mxfp4 MoE backend`,
+`SPARK: using flashinfer_spark cutlass_fused_moe`, and both `lm_head`s
+quantized — 201088 rows for the target, 32768 for the drafter).
+
+They differ from rows 4 and 5 only by
 [`patches/kernels/01`](../patches/kernels/01-moe-sf-padding-loop.patch), which
 is bit-identical in output, plus — for row 1 — a draft head whose lm_head was
 cut to 32768 rows by [`ops/shrink-draft-vocab.py`](../ops/shrink-draft-vocab.py).
@@ -128,8 +136,8 @@ so it survives `torch.compile` and CUDA-graph capture.
 ## 7. Reproducing a row
 
 ```bash
-PROFILE=spec docker run ... ghcr.io/luka-loehr/gptoss-spark:0.1.0      # row 1
-PROFILE=plain docker run ... ghcr.io/luka-loehr/gptoss-spark:0.1.0     # row 2
+PROFILE=spec docker run ... ghcr.io/luka-loehr/gptoss-spark:0.2.0      # row 1
+PROFILE=plain docker run ... ghcr.io/luka-loehr/gptoss-spark:0.2.0     # row 2
 SPEC_K=2 PROFILE=spec docker run ...                                # row 5
 ```
 

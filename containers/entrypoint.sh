@@ -8,8 +8,8 @@ PORT="${PORT:-8100}"
 SERVED_NAME="${SERVED_NAME:-gptoss}"
 MAX_MODEL_LEN="${MAX_MODEL_LEN:-32768}"
 GPU_MEM_UTIL="${GPU_MEM_UTIL:-0.70}"
-# spec  = single-user record (65 tok/s, 2 slots, Eagle3 K=1)
-# plain = multi-user (62 tok/s single, 300 tok/s aggregate at 30 users)
+# spec  = single-user record (68.9 tok/s, 2 slots, Eagle3 K=1)
+# plain = multi-user (64.3 tok/s single, 300 tok/s aggregate at 30 users)
 PROFILE="${PROFILE:-plain}"
 
 if [[ ! -r "${MODEL_DIR}/config.json" ]]; then
