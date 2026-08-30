@@ -1,11 +1,13 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 — 2026-08-30
 
-**Single stream 65.2 → 68.8 tok/s speculative, 62.4 → 65.0 plain.** Aggregate
-throughput at 30 concurrent users is unchanged within run-to-run noise, which
-is what a *fixed* per-layer cost predicts: at high concurrency there is enough
-real work per layer to absorb it.
+**Single stream 65.2 → 68.9 tok/s speculative, 62.4 → 64.3 plain** — both
+measured from the published image, started against the real checkpoint with the
+MoE module deleted from its JIT cache so it compiled that kernel from its own
+patched source. Aggregate throughput at 30 concurrent users is unchanged within
+run-to-run noise, which is what a *fixed* per-layer cost predicts: at high
+concurrency there is enough real work per layer to absorb it.
 
 - `patches/kernels/01-moe-sf-padding-loop.patch` — `expandInputRowsKernel` and
   `doActivationKernel` ended with a loop over `alignment × num_experts`
