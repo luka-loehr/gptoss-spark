@@ -1,3 +1,5 @@
+Modified from vLLM (Apache-2.0), see NOTICE
+
 --- a/vllm/model_executor/models/llama_eagle3.py
 +++ b/vllm/model_executor/models/llama_eagle3.py
 @@ -32,6 +32,19 @@

@@ -1,3 +1,5 @@
+Modified from FlashInfer (Apache-2.0), see NOTICE
+
 --- a/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_kernels.cuh
 +++ b/csrc/fused_moe/cutlass_backend/cutlass_fused_moe_kernels.cuh
 @@ -1553,19 +1553,24 @@

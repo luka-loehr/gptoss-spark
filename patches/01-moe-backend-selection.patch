@@ -1,3 +1,5 @@
+Modified from vLLM (Apache-2.0), see NOTICE
+
 --- a/vllm/model_executor/layers/fused_moe/oracle/mxfp4.py
 +++ b/vllm/model_executor/layers/fused_moe/oracle/mxfp4.py
 @@ -471,6 +471,13 @@
