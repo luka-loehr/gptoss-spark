@@ -6,6 +6,52 @@ single stream, temperature 0, `reasoning_effort=low`, decode median) or
 one DGX Spark, GB10, 121 GB, `sm_121`. Raw artifacts are in
 [`../results/`](../results/).
 
+## What produced the speedup
+
+Ranked by contribution, each measured in isolation:
+
+1. **MXFP4 for the dense layers, not just the experts** (+28 tok/s).
+   gpt-oss ships MXFP4 expert weights; `qkv_proj`, `o_proj` and the 201k-row
+   `lm_head` stay bf16 in every stock path. Runtime-quantizing them and
+   running them through Marlin's fused dequant-GEMM is the single largest
+   win: stock vLLM sits at 33–35 tok/s *with* the fast MoE kernels until
+   this lands. ([patches/03](../patches/03-mxfp4-dense-layers.patch), quality check in §5)
+2. **SM121-tuned CUTLASS MXFP4 MoE kernels** (+~27 tok/s over Marlin MoE).
+   From the [`spark-vllm-mxfp4-docker`](https://github.com/christopherowen/spark-vllm-mxfp4-docker)
+   FlashInfer fork, vendored under a separate import name so the engine's own
+   FlashInfer (needed for `sm_121` attention) stays untouched.
+   ([patches/02](../patches/02-spark-cutlass-kernels.patch), [KERNELS.md](KERNELS.md))
+3. **Backend selection unblocked** (enables the above).
+   Upstream's MXFP4 oracle filters the CUTLASS×MXFP8 variant out on the
+   default activation key; three lines re-admit it.
+   ([patches/01](../patches/01-moe-backend-selection.patch))
+4. **Speculation at K=1, with a quantized drafter** (+2.8 tok/s, 62.4 → 65.2).
+   Two upstream bugs had to be fixed first for the NVIDIA Eagle3 head to run
+   at all ([patches/04](../patches/04-gpt-oss-eagle3-aux.patch),
+   [patches/05](../patches/05-eagle3-draft-quant.patch)). K=2 is slower than
+   K=1 on this model. ([SPECULATION.md](SPECULATION.md))
+5. **MoE support kernel loop inverted** (+2.6 tok/s plain, +3.1 spec). Two
+   kernels ended with a loop over `alignment × num_experts` scale-factor
+   padding slots (16384 iterations), reloading two `expert_first_token_offset`
+   entries from global memory each time. At decode batch sizes only a handful
+   of experts are routed to, so over 99 % of those iterations wrote nothing.
+   Running the loop once per expert is bit-identical in output and 12–15 µs
+   cheaper per MoE call.
+   ([patches/kernels/01](../patches/kernels/01-moe-sf-padding-loop.patch), [KERNELS.md §5](KERNELS.md))
+6. **Draft head vocabulary cut to 32768 rows** (+0.5 tok/s). NVIDIA's Eagle3
+   heads ship the full vocabulary and no `d2t` table, so each draft step
+   streamed a 307 MB `lm_head`. Cutting it to the 32768 tokens the target
+   actually emits costs ~1.8 points of acceptance and cannot change an answer,
+   since the target still verifies over all 201088.
+   ([ops/shrink-draft-vocab.py](../ops/shrink-draft-vocab.py))
+
+After these changes the GPU executes kernels ~100 % of the wall time (24.9 s
+of a 25 s `nsys` window), so there is no host-side stall left to reclaim. An
+earlier estimate of "12 ms/pass engine overhead" came from a Python profiler
+and did not hold up under device-side measurement
+([NEGATIVE-RESULTS.md §7](NEGATIVE-RESULTS.md)). The per-pass breakdown and
+what remains are in [KERNELS.md](KERNELS.md).
+
 ## 1. Single stream, every engine tried
 
 | # | configuration | decode | note |
@@ -59,7 +105,7 @@ drafter may *propose*, while the target still verifies over the full 201088.
 
 `bench/loadtest.py`, N streaming requests fired simultaneously, 512 tokens
 each. "Aggregate" is all completion tokens divided by the makespan of the
-whole round — the honest measure of how much work the box does.
+whole round, which measures how much work the box does.
 
 | users | | SGLang production | this repo (plain) |
 | ---: | --- | ---: | ---: |
@@ -74,7 +120,7 @@ whole round — the honest measure of how much work the box does.
 | 30 | TTFT median | 16.4 s | **1.23 s** |
 | 30 | makespan | 62.9 s | **51.3 s** |
 
-The per-user column at 30 concurrent users favours the old stack only because
+The per-user column at 30 concurrent users favors the old stack only because
 it ran `--max-running-requests 15`: fifteen users decoded quickly while the
 other fifteen sat in a queue for a median 16.4 seconds. This stack admits all
 thirty at once — everyone sees text after ~1.2 s — and still finishes the
@@ -138,11 +184,11 @@ so it survives `torch.compile` and CUDA-graph capture.
 ```bash
 PROFILE=spec docker run ... ghcr.io/luka-loehr/gptoss-spark:0.2.0      # row 1
 PROFILE=plain docker run ... ghcr.io/luka-loehr/gptoss-spark:0.2.0     # row 2
-SPEC_K=2 PROFILE=spec docker run ...                                # row 5
+SPEC_K=2 PROFILE=spec docker run ...                                # K=2, cf. row 6
 ```
 
-Rows 3 and 4 (the pre-patch numbers) need the 0.1.0 image, whose kernels are
+Rows 4–6 (the pre-kernel-patch numbers) need the 0.1.0 image, whose kernels are
 unpatched.
 
-Rows 5–13 need their own images; the exact tags and flags are listed in
+Rows 7–13 need their own images; the exact tags and flags are listed in
 [NEGATIVE-RESULTS.md](NEGATIVE-RESULTS.md).

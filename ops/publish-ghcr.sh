@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Build the serving image on an sm_121 host and push it to GHCR.
 #
-#   OWNER=your-gh-user VERSION=0.1.0 ops/publish-ghcr.sh
+#   OWNER=your-gh-user VERSION=0.2.0 ops/publish-ghcr.sh
 #
 # Needs: docker login ghcr.io (a PAT with write:packages), and this repo as CWD.
 set -Eeuo pipefail
 
 OWNER="${OWNER:?set OWNER to your GitHub user/org}"
-VERSION="${VERSION:?set VERSION, e.g. 0.1.0}"
+VERSION="${VERSION:?set VERSION, e.g. 0.2.0}"
 IMAGE="ghcr.io/${OWNER}/gptoss-spark"
 
 arch="$(uname -m)"

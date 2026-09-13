@@ -61,6 +61,11 @@ weight loading and CUDA-graph capture).
 Memory: the model needs ~83 GiB with the default `GPU_MEM_UTIL`. On a 121 GB
 Spark that leaves room for one more small service, not for a second LLM.
 
+Draft head: the 68.9 tok/s `PROFILE=spec` figure assumes an Eagle3 head whose
+`lm_head` has been cut to 32768 rows by
+[`ops/shrink-draft-vocab.py`](../ops/shrink-draft-vocab.py). NVIDIA's stock
+head works unchanged and costs ~0.5 tok/s.
+
 ## 4. Verifying a deployment
 
 ```bash
@@ -82,9 +87,21 @@ Stated plainly, because they are not done:
   OpenAI-compatible protocol and streams `reasoning` deltas, but a stack
   migrating off SGLang should verify its own tool-call paths against this one.
 - **A quality gate on your own evaluation set.** The 20-prompt comparison in
-  [../README.md §4](../README.md) shows answer-level parity; it is not a
+  [RESULTS.md §5](RESULTS.md) shows answer-level parity; it is not a
   substitute for a domain evaluation.
 - **Supply chain.** The kernels come from a personal fork pinned by commit.
   Vendor or mirror it before depending on it in production.
 - **Patch drift.** The patches are diffs against one nightly. Pin the image
   by digest; refresh the patches deliberately, not implicitly.
+
+## 6. Building from source
+
+```bash
+OWNER=your-gh-user VERSION=0.2.0 ops/publish-ghcr.sh   # build + push, on the Spark
+ops/apply-patches.sh                                  # or patch an existing vLLM install
+```
+
+Pinned upstream: vLLM `0.28.1rc1.dev43+g6f7df92a8`, the FlashInfer fork's
+kernels (commit in [`containers/Dockerfile`](../containers/Dockerfile)), NVIDIA
+`gpt-oss-120b-Eagle3-v3`. The patches are diffs against those exact files; a
+newer nightly needs them refreshed ([PATCHES.md](PATCHES.md)).

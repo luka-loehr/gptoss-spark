@@ -1,8 +1,12 @@
 # The patches
 
-Five diffs, 471 lines total, against vLLM `0.28.1rc1.dev43+g6f7df92a8`. Three
-of them work around genuine upstream bugs; two are Spark-specific enablement.
-Apply with `ops/apply-patches.sh` or let `containers/Dockerfile` do it.
+Six diffs. Five, 471 lines total, apply to vLLM `0.28.1rc1.dev43+g6f7df92a8`:
+three of them work around genuine upstream bugs, two are Spark-specific
+enablement. The sixth, `patches/kernels/01-moe-sf-padding-loop.patch`, applies
+to the vendored FlashInfer fork's MoE kernels and is described in
+[KERNELS.md §5](KERNELS.md).
+Apply with `ops/apply-patches.sh` (vLLM patches only) or let
+`containers/Dockerfile` do both.
 
 ## 01 — MoE backend selection (16 lines)
 

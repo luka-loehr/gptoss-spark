@@ -55,7 +55,7 @@ half the speed of the CUTLASS path on these shapes.
 
 ## 5. Speculation depth K≥2
 
-Counter-intuitive and worth internalising: on a MoE model, verifying N tokens
+On a MoE model, verifying N tokens
 costs nearly N× the *expert* traffic, because different tokens route to
 different experts. Verification is not "almost free" the way it is on a dense
 model.
@@ -66,7 +66,7 @@ model.
 | 2 | 1.96 | 32.3 ms | 60.7 tok/s |
 
 A second draft step costs 7.6 ms and returns ~0.35 accepted tokens. It also
-drops GPU utilisation from ~100 % to 89.5 %, i.e. it leaves the CUDA-graph
+drops GPU utilization from ~100 % to 89.5 %, i.e. it leaves the CUDA-graph
 path — a real upstream bug for anyone who needs K≥2, but irrelevant once you
 accept K=1.
 
@@ -94,7 +94,7 @@ pipeline is kept because it is validated and reusable, not because it paid off.
 Claimed three times on the strength of a `py-spy` profile showing 7.6 ms per
 pass inside `torch.cuda.synchronize`, and refuted three times:
 
-1. GPU utilisation sampled at 100 ms during speculative decoding: **89.5 %**.
+1. GPU utilization sampled at 100 ms during speculative decoding: **89.5 %**.
 2. `nsys` with `--cuda-graph-trace=node` over 998 passes: kernel time is
    **24.9 s of a 25 s window**.
 3. The per-layer micro-benchmark accounts for the pass within ~5 %.
@@ -108,7 +108,7 @@ Both knobs were swept at production shapes (128 experts, top-4, 2944 padded
 dims), not at the synthetic shapes the upstream notes used:
 
 - **Tiles**: default `64x128` → 190 GB/s. `128x128` → 156 GB/s. `64x64` fails
-  to initialise (requests 102400 B of shared memory; GB10 allows 101376 B).
+  to initialize (requests 102400 B of shared memory; GB10 allows 101376 B).
   `64x32` and smaller crash with `illegal instruction`.
 - **Pipeline stages**: the CUTLASS auto-carveout picks 3. Forcing 2 makes the
   kernel **2.2× slower** (83 GB/s) — this kernel lives on prefetch depth, not

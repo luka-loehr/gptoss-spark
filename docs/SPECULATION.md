@@ -24,7 +24,7 @@ MXFP4-quantized, `TRITON_ATTN`, full CUDA graphs:
 
 One draft step costs ~7 ms, of which only ~1.9 ms is the draft model's own
 layer work. At 61 % acceptance the first step pays for itself; the second does
-not. K=2 additionally drops GPU utilisation to 89.5 % (K=1 holds ~100 %),
+not. K=2 additionally drops GPU utilization to 89.5 % (K=1 holds ~100 %),
 i.e. the second step leaves the CUDA-graph path — an upstream issue worth
 fixing for anyone who needs deeper trees.
 
@@ -73,5 +73,5 @@ Outcome: offline agreement on serving-distribution data 61.0 % → 67.7 %,
 serving acceptance and throughput unchanged. The measured reason is that
 position-1 acceptance (the drafter's *own* recursion) did not improve —
 single-step training on target hidden states cannot teach that. Multi-step
-training plus roughly 10× the data is the honest next attempt; it was not
+training plus roughly 10× the data is the next attempt; it was not
 made because the expected value was below the alternatives.
